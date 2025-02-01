@@ -11,6 +11,9 @@ set(PICO_EXTRAS_PATH "../lib/pico-extras")
 include(cmake/pico_sdk_import.cmake)
 include(cmake/pico_extras_import.cmake)
 
+# set(FAMILY rp2040)
+# include(${CMAKE_CURRENT_SOURCE_DIR}/lib/pico-sdk/lib/tinyusb/hw/bsp/family_support.cmake)
+
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
@@ -22,16 +25,16 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_D
 
 # add_subdirectory(lib/audio)
 # add_subdirectory(lib/oled_ssd1306)
-
+file(GLOB files "src/*.cpp")
 add_executable(main
-    src/main.cpp
+    ${files}
 )
 
 pico_set_program_name(main "main")
 pico_set_program_version(main "0.1")
 
-pico_enable_stdio_uart(main 0)
-pico_enable_stdio_usb(main 1)
+pico_enable_stdio_uart(main 1)
+pico_enable_stdio_usb(main 0)
 
 # Add the standard library to the build
 target_link_libraries(main pico_stdlib)
@@ -42,18 +45,18 @@ target_link_libraries(main
         # hardware_spi
         hardware_i2c
         # hardware_dma
-        # hardware_pio
-        # hardware_irq
+        hardware_pio
+        hardware_irq
         # hardware_interp
         # hardware_timer
         # hardware_watchdog
-        # hardware_clocks
+        hardware_clocks
         # pico_bootsel_via_double_reset
         # pico_util_buffer
         # pico_multicore
-        #pico_stdio_uart
-        #tinyusb_device
-        #tinyusb_board
+        pico_stdio_uart
+        tinyusb_device
+        # tinyusb_board
         #oled_ssd1306
         )
 
