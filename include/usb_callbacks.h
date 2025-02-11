@@ -13,26 +13,40 @@
 extern "C" {
 #endif
 
-// Blink intervals
-#define BLINK_NOT_MOUNTED 1000
-#define BLINK_MOUNTED 500
-#define BLINK_SUSPENDED 250
 
 #define REPORT_INPUT 1
 #define REPORT_FEATURE 2
 
+enum USBStatus{
+  mounted,
+  not_mounted,
+  suspended
+};
 
-extern uint32_t blink_interval_ms;
-extern volatile int scroll_delta;
+struct USBData{
+  USBStatus status;
+  int8_t scroll_delta;
+  bool remoteWakeup;
 
-/// Standard HID Boot Protocol Mouse Report.
-typedef struct TU_ATTR_PACKED
-{
-//   uint8_t resolution_multiplier; /**< buttons mask for currently pressed buttons in the mouse. */
-  int8_t  wheel;   /**< Current delta wheel movement on the mouse. */
-} hid_wheel_report_t;
+  uint8_t Resolution_Multiplier;
+};
 
-void usb_init(void);
+struct MouseReport{
+  uint8_t button;
+  int8_t X;
+  int8_t Y;
+  int8_t wheel;
+  int8_t pan;
+};
+
+struct FeatureReport{
+  uint8_t resolution_multiplier;
+};
+
+extern USBData usb_data;
+extern led::LED *statusLED;
+
+void usb_init(uint8_t resolution_multiplier);
 void usb_update(void);
 
 // Device callbacks

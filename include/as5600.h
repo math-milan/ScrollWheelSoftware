@@ -2,8 +2,6 @@
 
 namespace encoder{
     #define AS5600_ADDRESS 0x36
-    #define DST_BUFFER_LEN 3
-
 
     enum Register_Address{
         ZMCO = 0x00,
@@ -65,37 +63,95 @@ namespace encoder{
 
     struct config
     {
-        PowerMode pm;
-        Hysteresis hyst;
-        OutputStage outs;
-        PWMFrequency pwmf;
-        SlowFilter sf;
-        FastFilterThreshold fth;
-        bool watch_dog;
+        uint8_t pm : 2;
+        uint8_t hyst : 2;
+        uint8_t outs : 2;
+        uint8_t pwmf : 2;
+        uint8_t sf : 2;
+        uint8_t fth : 3;
+        bool wd : 1;
+
+        config(uint16_t value)
+        {
+            pm = value & 0b11;
+            hyst = (value >> 2) & 0b11;
+            outs = (value >> 4) & 0b11;
+            pwmf = (value >> 6) & 0b11;
+            sf = (value >> 8) & 0b11;
+            fth = (value >> 10) & 0b111;
+            wd = (value >> 13) & 0b1;
+        }
+
+        // Convert struct to uint16_t
+        uint16_t toUInt16() const
+        {
+            return (pm) |           // Bits 0-1
+               (hyst << 2)  |       // Bits 2-3
+               (outs << 4)  |       // Bits 4-5
+               (pwmf << 6)  |       // Bits 6-7
+               (sf << 8)    |       // Bits 8-9
+               (fth << 10)  |       // Bits 10-12
+               (wd << 13);          // Bit 13
+        }    
+    
     };
     
+    class Buffer{
+        private:
+            static constexpr int ARRAY_SIZE = 5;
+            int16_t *buffer;
+            int head, count;
+        public:
+            Buffer();
+            ~Buffer();
+
+            void push(int16_t number);
+            const int16_t& operator[](int index) const;
+            int size();
+    };    
     
     class AS5600{ 
         public:
             AS5600();
             ~AS5600();
 
-            bool get_config(config *Config);
+            // bool get_config(config *Config);
             /// @brief 
             /// @param str The Char Buffer must be at least 256 Bytes Long
             /// @return False if no response from the device
-            bool get_settigs_string(char *str);
+            // bool get_settigs_string(char *str);
                 
             int16_t getRawAngel();
             int16_t getAngel();
+
+            config getConfig();
+            bool setConfig(config cfg);
         private:
-            uint8_t *dst;
+            bool error_flag;
             void init();
+            void setErrorFlag();
 
             bool writeInstruction(Register_Address address);
-            bool read(int len);
-            int16_t get_12_bits();
-
-            
+            bool writeData(uint16_t data, int len);
+            uint16_t read(int len);            
     };
+
+    class Encoder{
+        private:
+            int resolution = 1000;
+
+            AS5600 as5600;
+
+            int current, last;
+            
+            int16_t map(int16_t input);
+        public:
+            Encoder();
+            ~Encoder();
+
+            bool acquire_data();
+            int16_t getDelta();
+    };
+
+    
 }

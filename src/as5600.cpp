@@ -3,82 +3,64 @@
 namespace encoder{
     
     AS5600::AS5600(){
-        this->dst = new uint8_t[DST_BUFFER_LEN];
         this->init();
     };
     
     AS5600::~AS5600(){
-        delete[] dst;
     }
 
-    bool AS5600::get_config(config *Config)
-    {
-        if (!writeInstruction(Register_Address::STATUS) || !read(2)){
-            return false;
-        }
-
-        Config->sf = (encoder::SlowFilter)(dst[0] & 0x03);
-        Config->fth = (encoder::FastFilterThreshold)(dst[0] & 0x0C);
-        Config->watch_dog = (bool)(dst[0] & 0x20);
-
-        Config->pm = (encoder::PowerMode)(dst[1] & 0x03);
-        Config->hyst = (encoder::Hysteresis)(dst[1] & 0x0C);
-        Config->outs = (encoder::OutputStage)(dst[1] & 0x30);
-        Config->pwmf = (encoder::PWMFrequency)(dst[1] & 0xC0);
-
-        return true;
-    }
-
-    bool AS5600::get_settigs_string(char *str)
-    {
-        config cfg;
-
-        if (!get_config(&cfg)){
-            return false;
-        }
-
-        snprintf(str, 256,  
-        "Power Mode: %d\n"
-        "Hysteresis: %d\n"
-        "Output Stage: %d\n"
-        "PWM Frequency: %d\n"
-        "Slow Filter: %d\n"
-        "Fast Filter Threshold: %d\n"
-        "Watchdog: %s\n",
-        cfg.pm,
-        cfg.hyst,
-        cfg.outs,
-        cfg.pwmf,
-        cfg.sf,
-        cfg.fth,
-        cfg.watch_dog ? "ON" : "OFF"
-        );
-
-        return true;
-    }
 
     int16_t AS5600::getRawAngel()
     {
-        if (!writeInstruction(Register_Address::RAW_ANGLE) || !read(2)){
+        if (!writeInstruction(Register_Address::RAW_ANGLE)){
+            setErrorFlag();
             return -1;
         }
-
-        return get_12_bits();
+        uint16_t data = read(2);
+        
+        return data & 0xFFF; // Returns 12 bits
     }
 
     int16_t AS5600::getAngel(){
-        if (!writeInstruction(Register_Address::ANGLE) || !read(2)){
+        if (!writeInstruction(Register_Address::ANGLE)){
+            setErrorFlag();
             return -1;
         }
+        uint16_t data = read(2);
+        
+        return data & 0xFFF; // Returns 12 bits
+    }
 
-        return get_12_bits();
+    config AS5600::getConfig(){
+        if (!writeInstruction(Register_Address::CONF)){
+            setErrorFlag();
+            return (config)0xFFF;
+        }
+        uint16_t data = read(2);
+        
+        return (config)data;
+    };
+
+    bool AS5600::setConfig(config cfg){
+        if (!writeInstruction(Register_Address::CONF)){
+            setErrorFlag();
+            return false;
+        }
+        writeData(cfg.toUInt16(), 2);
+        return true;
     }
     /// @brief Initilizes i2c on the rp2040
     void AS5600::init() {
+        error_flag = false;
+
         i2c_init(I2C_INST, 100*1000); // 100kHz Baudrate 
         
         gpio_set_function(SDA, GPIO_FUNC_I2C);
         gpio_set_function(SCL, GPIO_FUNC_I2C);
+    }
+
+    void AS5600::setErrorFlag(){
+        error_flag = true;
     }
     /// @brief Writes an Register Address Word to the AS5600
     bool AS5600::writeInstruction(Register_Address address)
@@ -86,18 +68,106 @@ namespace encoder{
         uint8_t reg = static_cast<uint8_t>(address);
         return (i2c_write_blocking(I2C_INST, AS5600_ADDRESS, &reg, 1, true) == 1); // if the 1 byte is written return true
     }
+
+    bool AS5600::writeData(uint16_t data, int len){
+        uint8_t src[2];
+        if (len == 1){
+            src[0] = data & 0xFF;
+        }
+        else{
+            src[0] = data & 0xF00;
+            src[1] = data & 0xFF;
+        }
+        if ( i2c_write_blocking(I2C_INST, AS5600_ADDRESS, src, len, true) == len ){
+            setErrorFlag();
+            return false;
+        }
+        return true;
+    }
     /// @brief Reads the specified number of bytes
-    bool AS5600::read(int len)
+    uint16_t AS5600::read(int len)
     {
+        int DST_BUFFER_LEN = 5;
+        uint8_t dst[DST_BUFFER_LEN];
         if (len >= DST_BUFFER_LEN){
             return false;
         }
-        return (i2c_read_blocking(I2C_INST, AS5600_ADDRESS, this->dst, len, true) == len);
+        if (i2c_read_blocking(I2C_INST, AS5600_ADDRESS, dst, len, true) != len){
+            setErrorFlag();
+            return 0xFFFF;
+        }
+        return (dst[0] << 8) | dst[1];
     }
-    /// @brief Extracts a 12 bit number from the buffer according to the Register Description off the AS5600
-    /// @return 12 bit number
-    int16_t AS5600::get_12_bits()
-    {
-        return ((dst[0] & 0x0F) << 8) | dst[1];
-    };
+
+    int16_t Encoder::map(int16_t input){
+
+        return (float)((input) * ((float)resolution / 4096.0f)); // 12 bit resolution;
+    }
+
+    Encoder::Encoder(){
+        as5600 = AS5600();
+        sleep_ms(50);
+        for (int i = 0; i < 2; i++)
+        {
+            acquire_data();
+            sleep_ms(10);
+        }
+    }
+
+    Encoder::~Encoder(){
+        // delete as5600;
+    }
+
+    bool Encoder::acquire_data(){
+        int16_t new_angel = as5600.getAngel();
+        if (new_angel == -1){
+            return false;
+        }
+        last = current;
+        current = map(new_angel);
+        return true;
+    }
+
+    int16_t Encoder::getDelta(){
+        int delta = current - last;
+        if (delta > resolution / 2) {
+            delta -= resolution;
+        } else if (delta < - resolution / 2) {
+            delta += resolution;
+        }
+        return delta;
+        // return current; 
+    }
+
+    Buffer::Buffer(){
+        buffer = new int16_t[ARRAY_SIZE];
+        head = 0; count = 0;
+    }
+
+    Buffer::~Buffer(){
+        delete buffer;
+    }
+
+    void Buffer::push(int16_t number){
+        buffer[head] = number;
+        head++; count++;
+        if (head >= ARRAY_SIZE){
+            head = 0;
+        }
+    }
+
+    int Buffer::size(){
+        if (count >= ARRAY_SIZE){
+            count = ARRAY_SIZE - 1;
+        }
+        return count;
+    }
+
+    const int16_t& Buffer::operator[](int index) const{
+        int true_index = (head - index);
+        if (true_index < 0 ){
+            true_index += ARRAY_SIZE;
+        }
+        return this->buffer[true_index];
+    }
 }
