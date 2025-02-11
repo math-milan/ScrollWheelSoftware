@@ -8,7 +8,9 @@ namespace led{
     enum status{
         not_mounted,
         mounted,
-        suspended
+        suspended,
+        ok,
+        not_ok
     };
 
     class LED{

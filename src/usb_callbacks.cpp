@@ -1,27 +1,16 @@
 #include "usb_callbacks.h"
 
-void usb_init(){
-    tusb_init();
-}
-
-void usb_update(){
-    tud_task(); // tinyusb device task
-    hid_task();
-}
-//--------------------------------------------------------------------+
-// Device callbacks
-//--------------------------------------------------------------------+
-
+// Callbacks
 // Invoked when device is mounted
 void tud_mount_cb(void)
 {
-  blink_interval_ms = BLINK_MOUNTED;
+  usb_data.status = mounted;
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void)
 {
-  blink_interval_ms = BLINK_NOT_MOUNTED;
+  usb_data.status = not_mounted;
 }
 
 // Invoked when usb bus is suspended
@@ -29,14 +18,14 @@ void tud_umount_cb(void)
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en)
 {
-  (void) remote_wakeup_en;
-  blink_interval_ms = BLINK_SUSPENDED;
+  usb_data.remoteWakeup = remote_wakeup_en;
+  usb_data.status = suspended;
 }
 
 // Invoked when usb bus is resumed
 void tud_resume_cb(void)
 {
-  blink_interval_ms = BLINK_MOUNTED;
+  usb_data.status = mounted;
 }
 
 //--------------------------------------------------------------------+
@@ -51,21 +40,12 @@ static void send_hid_report(uint8_t report_id)
   switch(report_id)
   {
     case REPORT_INPUT:{
-      char report[] = {0, 0, 0, (char)scroll_delta, 0};
-    
+      char report[] = {0, 0, 0, (char)usb_data.scroll_delta, 0};
 
       tud_hid_report(REPORT_INPUT, (const void*)&report, sizeof(report));
 
-      if (scroll_delta != 0){
-        scroll_delta = 0;
-      }
     }
     break;
-    case REPORT_FEATURE:{
-      char buffer[] = {0x03};
-      tud_hid_report(REPORT_FEATURE, (const void *)&buffer, sizeof(buffer));
-      break;
-    }
     default: break;
   }
 }
@@ -109,7 +89,6 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint8_t
 // Return zero will cause the stack to STALL request
 uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen)
 {
-  blink_interval_ms = BLINK_NOT_MOUNTED;
   // TODO not Implemented
   (void) instance;
   (void) report_id;
@@ -118,8 +97,13 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
   (void) reqlen;
 
   if (report_type == HID_REPORT_TYPE_FEATURE){
-    buffer[0] = 0x03;
-    return 1;
+    buffer[0] = report_id;
+    buffer[1] = usb_data.Resolution_Multiplier;
+    statusLED->setLED(100, 0, 0);
+    return 2;
+  }
+  if (report_type == HID_REPORT_TYPE_INPUT){
+    statusLED->setLED(0, 0, 100);
   }
 
   return 0;
@@ -154,4 +138,15 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
     //   }
     // }
   }
+}
+
+void usb_init(uint8_t resolution_multiplier){
+  tusb_init();
+
+  usb_data.Resolution_Multiplier = resolution_multiplier;
+}
+
+void usb_update(){
+    tud_task(); // tinyusb device task
+    hid_task(); // Send HID Reports
 }
