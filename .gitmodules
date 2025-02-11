@@ -4,3 +4,6 @@
 [submodule "lib/pico-extras"]
 	path = lib/pico-extras
 	url = https://github.com/raspberrypi/pico-extras.git
+[submodule "lib/librp2040"]
+	path = lib/librp2040
+	url = https://github.com/math-milan/librp2040.git
