@@ -2,6 +2,8 @@
 
  This version is for the Hardware Version 1.
 
+ ![Hardware Version 1](./images/hardware_v2.png)
+
  ## Features
    -> AS5600 Magnetic Encoder
    -> RGP Status LED
