@@ -1,7 +1,7 @@
 #include "common.h"
 #include "status_led.h"
-#include "as5600.h"
 #include "usb_callbacks.h"
+#include "PositionSensor.h"
 
 
 // uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
@@ -12,7 +12,7 @@ int main(void){
     usb_init(4);
 
     statusLED = new led::LED();
-    encoder::Encoder encoder = encoder::Encoder();
+    sensors::PositionSensor position_sensor = sensors::PositionSensor();
 
     statusLED->setStatus(led::ok);
     statusLED->update();
@@ -20,8 +20,8 @@ int main(void){
 
 
     while(1){   
-        encoder.acquire_data();
-        usb_data.scroll_delta = encoder.getDelta();
+        position_sensor.acquire_data();
+        usb_data.scroll_delta = position_sensor.getDelta();
 
         usb_update();
         sleep_ms(5);
