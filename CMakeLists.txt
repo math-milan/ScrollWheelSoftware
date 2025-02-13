@@ -23,6 +23,8 @@ project(main C CXX ASM)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_BINARY_DIR} ".")
 
+add_subdirectory(lib/librp2040)
+
 # add_subdirectory(lib/audio)
 # add_subdirectory(lib/oled_ssd1306)
 file(GLOB files "src/*.cpp")
@@ -56,6 +58,7 @@ target_link_libraries(main
         # pico_multicore
         pico_stdio_uart
         tinyusb_device
+        as5600
         # tinyusb_board
         #oled_ssd1306
         )
