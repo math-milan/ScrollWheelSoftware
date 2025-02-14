@@ -9,14 +9,19 @@ USBData usb_data;
 led::LED *statusLED;
 int main(void){
     stdio_init_all();
-    usb_init(4);
+    usb_init(0x00);
+
+    i2c_init(i2c0, 100000);  // Example for 100kHz
+    gpio_set_function(SDA, GPIO_FUNC_I2C);
+    gpio_set_function(SCL, GPIO_FUNC_I2C);
+
 
     statusLED = new led::LED();
-    sensors::PositionSensor position_sensor = sensors::PositionSensor();
 
     statusLED->setStatus(led::ok);
     statusLED->update();
 
+    sensors::PositionSensor position_sensor = sensors::PositionSensor();
 
 
     while(1){   

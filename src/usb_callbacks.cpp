@@ -55,7 +55,7 @@ static void send_hid_report(uint8_t report_id)
 void hid_task(void)
 {
   // Poll every 10ms
-  const uint32_t interval_ms = 10;
+  const uint32_t interval_ms = 1;
   static uint32_t start_ms = 0;
 
   if ( board_millis() - start_ms < interval_ms) return; // not enough time
@@ -97,10 +97,13 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
   (void) reqlen;
 
   if (report_type == HID_REPORT_TYPE_FEATURE){
-    buffer[0] = report_id;
-    buffer[1] = usb_data.Resolution_Multiplier;
-    statusLED->setLED(100, 0, 0);
-    return 2;
+    /*
+      TODO ? What shall be send her because the only thing importend for high resolution scrolling is the physical maximum.
+    */
+    // buffer[] = report_id;
+    // buffer[0] = usb_data.Resolution_Multiplier;
+    // statusLED->setLED(100, 0, 0);
+    // return 1;
   }
   if (report_type == HID_REPORT_TYPE_INPUT){
     statusLED->setLED(0, 0, 100);
@@ -114,7 +117,23 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
 {
   (void) instance;
+  if (report_id == 2){
+    // TODO Log what is send by the host Hardware 2.0 is needed.
+    statusLED->setLED(0, 0, 100);
+  }
+  // This might be a way to send data for users to set the color and animation of the rgb leds in Hardware 2.0
+  if (report_id == 3) // Vendor Report ID 3
+    {
+        if (bufsize == 3)
+        {
+            uint8_t r = buffer[0]; // Red
+            uint8_t g = buffer[1]; // Green
+            uint8_t b = buffer[2]; // Blue
 
+            statusLED->setLED(r, g, b); // Update LED with received color
+            watchdog_reboot(0, 0, 5); // After data is writen the device times out debuger is needed to find the issue ?
+        }
+    }
   if (report_type == HID_REPORT_TYPE_OUTPUT)
   {
     // // Set keyboard LED e.g Capslock, Numlock etc...

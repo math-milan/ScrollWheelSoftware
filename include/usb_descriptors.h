@@ -30,6 +30,10 @@ enum
   REPORT_ID_MOUSE = 1,
 };
 
+/*
+Smooth scrolling is controled not by the send package but it is set by the physical max. with 4000 steps per revolution i have set it to 60 and it works great
+*/
+
 
 const uint8_t desc_hid_report[] = {
     0x05, 0x01,        // USAGE_PAGE (Generic Desktop)
@@ -65,9 +69,9 @@ const uint8_t desc_hid_report[] = {
                     0x95, 0x01,  //   REPORT_COUNT (1)
                     0x75, 0x04,  //   REPORT_SIZE (4)
                     0x15, 0x00,  //   LOGICAL_MINIMUM (0)
-                    0x25, 0x15,  //   LOGICAL_MAXIMUM (15)
+                    0x25, 0x1,  //   LOGICAL_MAXIMUM (15)
                     0x35, 0x01,  //   PHYSICAL_MINIMUM (1)
-                    0x45, 0x16,  //   PHYSICAL_MAXIMUM (16)
+                    0x45, 0x3C,  //   PHYSICAL_MAXIMUM (16)
                     0xB1, 0x02,  //   FEATURE (Var)
                     0x85, 0x01,  //   REPORT_ID (0x01)
                     0x09, 0x38,  //   USAGE (Wheel)
@@ -99,7 +103,18 @@ const uint8_t desc_hid_report[] = {
                 0xC0,        // END COLLECTION (Logical)
             0xC0,        // END COLLECTION (Physical)
         0xC0,        // END COLLECTION (Logical)
-    0xC0         // END COLLECTION (Application)
+    0xC0,         // END COLLECTION (Application)
+    0x06, 0x00, 0xFF,  // USAGE_PAGE (Vendor Defined)
+    0x09, 0x01,        // USAGE (Vendor Usage 1)
+    0xA1, 0x01,        // COLLECTION (Application)
+        0x85, 0x03,    // REPORT_ID (3)  <-- Custom Vendor Report ID
+        0x95, 0x03,    // REPORT_COUNT (3)  <-- 3 bytes for RGB
+        0x75, 0x08,    // REPORT_SIZE (8)  <-- 8 bits per byte
+        0x15, 0x00,    // LOGICAL_MINIMUM (0)
+        0x25, 0xFF,    // LOGICAL_MAXIMUM (255)
+        0x09, 0x02,    // USAGE (Vendor Usage 2)
+        0x91, 0x02,    // OUTPUT (Data, Var, Abs) <-- Host to Device
+    0xC0 // END COLLECTION
 };
 
 
