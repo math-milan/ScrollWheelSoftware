@@ -14,7 +14,7 @@ void ledring::LEDRing::update(){
 
 bool ledring::LEDRing::startup(){
     int length = getLedDataLength();
-    if (length = PICO_ERROR_GENERIC){
+    if (length == PICO_ERROR_GENERIC || length == 0){
         ledHandler = new animation();
         ledHandler->setError();
         return false;
@@ -26,6 +26,7 @@ bool ledring::LEDRing::startup(){
     if (!success && length > 0){
         ledHandler = new animation();
         ledHandler->setError();
+        delete buffer;
         return false;
     }
 
@@ -41,6 +42,7 @@ bool ledring::LEDRing::startup(){
             success = false;
             break;
     }
+    delete buffer;
     return success;
 }
 
@@ -52,6 +54,17 @@ ledring::animation::~animation(){
     
 }
 
+void ledring::animation::update()
+{
+    if (error){
+        error_update();
+    }
+}
+
+void ledring::animation::setError()
+{
+    error = true;
+}
 
 void ledring::animation::error_update(){
     
@@ -72,7 +85,9 @@ ledring::Static::~Static()
 {
 }
 
-// void ledring::Static::update()
-// { // nothing to do. It dosen't make to update teh led's
-    
-// }
+void ledring::Static::update()
+{ // nothing to do. It dosen't make to update teh led's
+    if (error){
+        error_update();
+    }
+}

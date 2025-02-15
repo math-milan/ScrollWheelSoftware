@@ -1,4 +1,5 @@
 #include "lib/librp2040/src/ws2812b/ws2812.h"
+#include "storage.h"
 #include "common.h"
 
 namespace ledring{
@@ -12,7 +13,7 @@ class animation : protected ws2812{
         ~animation();
         /* code */
 
-        void update();
+        virtual void update();
 
         void setError();
 
@@ -38,9 +39,6 @@ class LEDRing{
         void update();
 
     private:
-        int8_t get_length(); // get the length of the data in eeprom
-        bool get_data(uint8_t *buffer, int len);
-
         bool startup();
         
         animation *ledHandler;        
@@ -55,7 +53,7 @@ class Static : public animation{
         Static(uint8_t *data, int len);
         ~Static();
 
-        // void update() override;
+        void update() override;
 
     private:
         uint32_t color_setting;

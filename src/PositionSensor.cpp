@@ -3,8 +3,8 @@
 namespace sensors{
 
     int16_t PositionSensor::map(int16_t input){
-
-        return (float)((input) * ((float)resolution / 4096.0f)); // 12 bit resolution;
+        return input;
+        // return (float)((input) * ((float)resolution / 4096.0f)); // 12 bit resolution;
     }
 
     PositionSensor::PositionSensor() : as5600(I2C_INST) {

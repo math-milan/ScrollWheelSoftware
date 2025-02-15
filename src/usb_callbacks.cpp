@@ -106,7 +106,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
     // return 1;
   }
   if (report_type == HID_REPORT_TYPE_INPUT){
-    statusLED->setLED(0, 0, 100);
+    // statusLED->setLED(0, 0, 100);
   }
 
   return 0;
@@ -119,7 +119,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
   (void) instance;
   if (report_id == 2){
     // TODO Log what is send by the host Hardware 2.0 is needed.
-    statusLED->setLED(0, 0, 100);
+    // statusLED->setLED(0, 0, 100);
   }
   // This might be a way to send data for users to set the color and animation of the rgb leds in Hardware 2.0
   if (report_id == 3) // Vendor Report ID 3
@@ -130,8 +130,8 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
             uint8_t g = buffer[1]; // Green
             uint8_t b = buffer[2]; // Blue
 
-            statusLED->setLED(r, g, b); // Update LED with received color
-            watchdog_reboot(0, 0, 5); // After data is writen the device times out debuger is needed to find the issue ?
+            // statusLED->setLED(r, g, b); // Update LED with received color
+            // watchdog_reboot(0, 0, 5); // After data is writen the device times out debuger is needed to find the issue ?
         }
     }
   if (report_type == HID_REPORT_TYPE_OUTPUT)
