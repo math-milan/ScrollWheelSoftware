@@ -27,11 +27,11 @@ add_subdirectory(lib/librp2040)
 
 # add_subdirectory(lib/audio)
 # add_subdirectory(lib/oled_ssd1306)
-file(GLOB filescpp "src/*.cpp")
+# file(GLOB filescpp "src/*.cpp")
 file(GLOB filesc "src/*.c")
 
 add_executable(main
-    ${filescpp}
+    # ${filescpp}
     ${filesc}
 )
 
@@ -62,7 +62,7 @@ target_link_libraries(main
         pico_stdio_uart
         tinyusb_device
         as5600
-        at24c01c
+        at24c02c
         ws2812b
         # tinyusb_board
         #oled_ssd1306

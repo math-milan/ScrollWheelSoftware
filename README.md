@@ -12,11 +12,11 @@
 - 18 WS2812b 4020 RGB leds
 
  ## Software Features
--[ ] LED ring with animations
--[x] Enhanced Wheel Support in Windows
--[ ] Controll over the Resolution Multiplierer
--[ ] Resolution Multipliere and LED Settings on the EEPROM
--[ ] Set custom resolution multiplier values on the device via software form PC
+- [ ] LED ring with animations
+- [x] Enhanced Wheel Support in Windows
+- [ ] Controll over the Resolution Multiplierer
+- [ ] Resolution Multipliere and LED Settings on the EEPROM
+- [ ] Set custom resolution multiplier values on the device via software form PC
 
 ## Building
 
@@ -29,3 +29,6 @@ cmake ..
 ```
 
 The file will be called main.uf2.
+
+
+sudo src/openocd -s tcl -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000"
