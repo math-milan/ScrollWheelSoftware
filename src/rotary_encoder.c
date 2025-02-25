@@ -21,18 +21,24 @@ bool encoder_acquire_data(rotary_encoder_t *instance){
     return true;
 }
 
+bool encoder_get_delta(rotary_encoder_t *instance, int *delta){
+    bool success = encoder_acquire_data(instance);
 
-int encoder_get_delta(rotary_encoder_t *instance){
-    bool succsess = encoder_acquire_data(instance);
-
-    int delta = instance->pos_value_current - instance->pos_value_last;
+    *delta = instance->pos_value_current - instance->pos_value_last;
     int resolution = 0xFFF;
 
-    if (delta > resolution / 2) {
-        delta -= resolution;
-    } else if (delta < - resolution / 2) {
-    delta += resolution;
+    if (*delta > resolution / 2) {
+        *delta -= resolution;
+    } else if (*delta < -resolution / 2) {
+        *delta += resolution;
     }
 
-    return succsess ? delta : PICO_ERROR_GENERIC;
+    return success;
+}
+
+
+bool encoder_peek_delta(rotary_encoder_t *instance)
+{
+    int new_reading = as5600_getAngel(I2C_INST);
+    return new_reading == instance->pos_value_current;
 }

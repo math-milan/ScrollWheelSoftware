@@ -14,9 +14,10 @@
  ## Software Features
 - [ ] LED ring with animations
 - [x] Enhanced Wheel Support in Windows
-- [ ] Controll over the Resolution Multiplierer
+- [x] Controll over the Resolution Multiplierer
 - [ ] Resolution Multipliere and LED Settings on the EEPROM
 - [ ] Set custom resolution multiplier values on the device via software form PC
+
 
 ## Building
 

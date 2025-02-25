@@ -13,5 +13,6 @@
 // #include "hardware/clocks.h"
 #include "math.h"
 #include "stdbool.h"
+#include "tusb_config.h"
 
 #include "project_config.h"
