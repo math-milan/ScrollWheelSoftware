@@ -2,3 +2,6 @@ build/*
 .DS_Store
 .vscode
 hid_composite
+target
+interface
+old

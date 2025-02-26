@@ -8,10 +8,11 @@
 // #include "hardware/timer.h"
 // #include "hardware/watchdog.h"
 #include "hardware/i2c.h"
-#include "hardware/pio.h"
+// #include "hardware/pio.h"
 #include "hardware/gpio.h"
-#include "hardware/clocks.h"
+// #include "hardware/clocks.h"
 #include "math.h"
 #include "stdbool.h"
+#include "tusb_config.h"
 
 #include "project_config.h"
