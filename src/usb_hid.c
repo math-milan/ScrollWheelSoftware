@@ -290,17 +290,45 @@ void usb_hid_desc_1_init(usb_manager_t *manager){
     manager->usb_hid_desc[71] = 0x20;
 }
 
-void usb_hid_desc_init(usb_manager_t *manager){
-    usb_hid_desc_1_init(manager);
+void usb_hid_desc_init(usb_manager_t *manager, storage_usb_t storage){
+  switch (storage.usb_hid_desc_id){
+    case 1:{
+      usb_hid_desc_1_init(manager);
+      }
+      break;
+    case 2:{
+      // implement other uses like volume controll
+    }
+      break;
+    default:{ // defualt hid desc 1
+      usb_data_default(storage);
+      usb_hid_desc_init(manager, storage);
+    }
+  }
+}
+
+void usb_data_default(storage_usb_t *storage){
+  storage->usb_hid_desc_id = 0;
+  storage->usb_hid_resolution_multiplier = 15;
+}
+
+static void usb_data_fetch(storage_usb_t *storage){
+  if (!storage_get_usb_data(storage)){
+    usb_data_default(storage);
+    return;
+  }
 }
 
 void usb_hid_init(bool (*ready_for_hid_report) (void), int (*as5600_get_delta) (void)){
+    storage_usb_t usb_storage;
+    storage_get_usb_data(usb_storage);
+
     usb_manager_t *manager = get_usb_manager();
 
     manager->ready_for_hid_report = ready_for_hid_report;
     manager->as5600_get_delta = as5600_get_delta;
 
-    usb_hid_desc_init(manager);
+    usb_hid_desc_init(manager, usb_storage);
 
     tusb_init();
 }
