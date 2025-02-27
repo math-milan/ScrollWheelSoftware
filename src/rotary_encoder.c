@@ -37,8 +37,7 @@ bool encoder_get_delta(rotary_encoder_t *instance, int *delta){
 }
 
 
-bool encoder_peek_delta(rotary_encoder_t *instance)
-{
+bool encoder_peek_delta(rotary_encoder_t *instance){
     int new_reading = as5600_getAngel(I2C_INST);
     return new_reading == instance->pos_value_current;
 }
