@@ -62,7 +62,7 @@ target_link_libraries(main
         pico_stdio_uart
         tinyusb_device
         as5600
-        at24c02c
+        # at24c02c
         ws2812b
         # tinyusb_board
         #oled_ssd1306

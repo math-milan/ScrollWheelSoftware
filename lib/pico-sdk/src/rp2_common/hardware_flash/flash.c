@@ -9,6 +9,7 @@
 
 #include "hardware/structs/ssi.h"
 #include "hardware/structs/ioqspi.h"
+#include "flash.h"
 
 #define FLASH_BLOCK_ERASE_CMD 0xd8
 

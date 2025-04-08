@@ -15,9 +15,10 @@
 - [ ] LED ring with animations
 - [x] Enhanced Wheel Support in Windows
 - [x] Controll over the Resolution Multiplierer
-- [ ] Resolution Multipliere and LED Settings on the EEPROM
-- [ ] Set custom resolution multiplier values on the device via software form PC
-
+- [ ] Changebel funktion like switch form scrolling to volume controll
+- [ ] 2 Way comunication to the pc ofer usb hid vendor packages
+- [ ] Write Configuration Data from the PC to the Device. Like custom Resolution Multiplier or color of the leds
+- [ ] Button 
 
 ## Building
 
